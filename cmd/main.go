@@ -4,31 +4,11 @@ import (
 	"flag"
 	"fmt"
 	"github.com/sam-caldwell/ansi"
-	"net"
+	"github.com/sam-caldwell/getNetworkAddress"
 	"os"
 	"strconv"
 	"strings"
 )
-
-// TrimTrailingZeroOctets - delete any .0 octets
-func trimTrailingZeroOctets(input, suffix string, count int) string {
-	for i := 0; i < count; i++ {
-		input = strings.TrimSuffix(input, suffix)
-	}
-	return input
-}
-
-// getNetworkAddress takes a CIDR string and returns the network address.
-func getNetworkAddress(cidr string) (string, error) {
-	ip, ipnet, err := net.ParseCIDR(cidr)
-	if err != nil {
-		return "", err
-	}
-
-	// Get the network address from the parsed CIDR
-	networkAddr := ip.Mask(ipnet.Mask).String()
-	return networkAddr, nil
-}
 
 func main() {
 	cidr := flag.String("cidr", "", "cidr block")
@@ -37,7 +17,7 @@ func main() {
 	if *cidr == "" {
 		ansi.Red().Printf("invalid cidr block (%s)", *cidr).LF().Fatal(1).Reset()
 	}
-	networkAddr, _ := getNetworkAddress(*cidr)
+	networkAddr, _ := getNetworkAddress.GetNetworkAddress(*cidr)
 	sz, err := func() (int, error) {
 		parts := strings.Split(*cidr, "/")
 		if len(parts) < 2 {
@@ -54,7 +34,7 @@ func main() {
 		os.Exit(1)
 	}
 	if *trim {
-		fmt.Println(trimTrailingZeroOctets(networkAddr, ".0", sz))
+		fmt.Println(getNetworkAddress.TrimTrailingZeroOctets(networkAddr, sz))
 	} else {
 		fmt.Println(networkAddr)
 	}
